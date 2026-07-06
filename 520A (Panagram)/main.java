@@ -1,3 +1,5 @@
+// tc = O(n) //sc = O(1)
+
 import java.util.*;
 
 public class main{
