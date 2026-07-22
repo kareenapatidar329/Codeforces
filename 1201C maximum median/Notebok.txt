@@ -1,0 +1,597 @@
+CF 1201C — Maximum Median
+Problem Story
+
+Hume ek array diya hai jiska size n hai.
+n always odd hota hai.
+
+Ek number k diya hai.
+
+Ek operation me hum kisi bhi one element ko +1 increase kar sakte hain.
+
+Hume find karna hai:
+
+Maximum possible median after at most k operations
+Median Meaning
+
+Median sorted array ka middle element hota hai.
+
+medianIndex = n / 2
+
+Example:
+
+arr = [1, 2, 1, 1, 1]
+
+Sort:
+
+[1, 1, 1, 1, 2]
+
+Here:
+
+n = 5
+medianIndex = 5 / 2 = 2
+median = arr[2] = 1
+Important Concept
+
+Median ko increase karne ke liye hume sorted array ke median index se right side wale elements ko increase karna hota hai.
+
+Example:
+
+[1, 1, 1, 1, 2]
+       ↑
+   median index
+
+Median index se right side:
+
+1, 1, 2
+
+Left side wale elements increase karne se median directly increase nahi hota.
+
+Doubt 1
+“Median ko 3 banana hai ye to kahi nahi likha?”
+
+Question me directly nahi likha hota ki median 3 banana hai.
+
+Hum khud possible median values check karte hain.
+
+Example:
+
+current median = 1
+k = 5
+
+Ab hum check kar sakte hain:
+
+Can median become 2?
+Can median become 3?
+Can median become 4?
+
+So 3 ek possible target median hai.
+
+Binary search me isi possible answer ko:
+
+mid = possible median
+
+bolte hain.
+
+Doubt 2
+“Median se last tak sab equal hone chahiye kya?”
+
+Exactly equal hone zaruri nahi hai.
+
+Correct rule:
+
+Median index se last tak sab elements targetMedian ke greater than or equal hone chahiye.
+
+Matlab agar target median 3 banana hai, to elements:
+
+>= 3
+
+hone chahiye.
+
+Example:
+
+arr = [1, 1, 1, 4, 10]
+targetMedian = 3
+
+Median index se right side:
+
+1, 4, 10
+
+Check:
+
+1 < 3  → isko 3 banana padega → cost = 2
+4 >= 3 → already okay
+10 >= 3 → already okay
+
+Final:
+
+[1, 1, 3, 4, 10]
+
+Median = 3
+
+So rule:
+
+Jo element targetMedian se chhota hai, usko targetMedian tak increase karo.
+Jo already targetMedian se bada/equal hai, usko touch nahi karna.
+Cost Calculation
+
+Agar hume target median x banana hai:
+
+cost = 0
+
+for i = medianIndex to n - 1:
+    if arr[i] < x:
+        cost += x - arr[i]
+
+Agar:
+
+cost <= k
+
+to target median possible hai.
+
+Agar:
+
+cost > k
+
+to target median possible nahi hai.
+
+Full Example
+arr = [1, 2, 1, 1, 1]
+k = 5
+
+Sort:
+
+[1, 1, 1, 1, 2]
+
+Median index:
+
+n / 2 = 5 / 2 = 2
+
+Current median:
+
+arr[2] = 1
+
+Now check target median 3.
+
+Median index se last tak elements:
+
+1, 1, 2
+
+Cost:
+
+1 → 3 = 2
+1 → 3 = 2
+2 → 3 = 1
+
+Total cost:
+
+2 + 2 + 1 = 5
+
+Since:
+
+5 <= k
+
+Median 3 possible hai.
+
+Now check target median 4.
+
+1 → 4 = 3
+1 → 4 = 3
+2 → 4 = 2
+
+Total cost:
+
+3 + 3 + 2 = 8
+
+Since:
+
+8 > k
+
+Median 4 possible nahi hai.
+
+So answer:
+
+3
+Brute Force Approach
+Idea
+Array sort karo.
+Current median find karo.
+Median value ko one by one increase karke check karo.
+Har target median ke liye cost calculate karo.
+Jo maximum possible median mile, answer wahi hoga.
+
+Pseudo:
+
+sort(arr)
+
+medianIndex = n / 2
+answer = arr[medianIndex]
+
+for targetMedian from arr[medianIndex] to arr[medianIndex] + k:
+
+    cost = 0
+
+    for i = medianIndex to n - 1:
+        if arr[i] < targetMedian:
+            cost += targetMedian - arr[i]
+
+    if cost <= k:
+        answer = targetMedian
+    else:
+        break
+Brute Force Time Complexity
+
+Outer loop k tak chal sakta hai.
+Inner loop n tak chal sakta hai.
+
+Time Complexity = O(n * k)
+
+Ye slow hai, kyunki k large ho sakta hai.
+
+Optimized Approach — Binary Search on Answer
+
+Yahan binary search index par nahi, answer par lagegi.
+
+Answer kya hai?
+
+Maximum possible median
+
+So:
+
+mid = possible median
+
+Search range:
+
+low = arr[n / 2];
+high = arr[n / 2] + k;
+Why low = current median?
+
+Kyuki hum elements ko sirf increase kar sakte hain, decrease nahi kar sakte.
+
+So minimum possible answer current median hi hai.
+
+Why high = current median + k?
+
+Total k operations hain.
+
+Ek operation me kisi one element ko +1 increase kar sakte hain.
+
+So median current value se at most k tak increase ho sakta hai.
+
+Example:
+
+current median = 1
+k = 5
+
+Safe upper limit:
+
+high = 1 + 5 = 6
+
+Actual answer 3 ho sakta hai, but 6 safe upper bound hai.
+
+Binary Search Logic
+
+Agar mid possible hai:
+
+cost <= k
+
+To answer update karo and bigger median try karo:
+
+ans = mid;
+low = mid + 1;
+
+Agar mid possible nahi hai:
+
+cost > k
+
+To smaller median try karo:
+
+high = mid - 1;
+Helper Function: canMake()
+
+Ye function check karta hai ki target median possible hai ya nahi.
+
+private static boolean canMake(long[] arr, int n, long k, long targetMedian) {
+    long cost = 0;
+    int medianIndex = n / 2;
+
+    for (int i = medianIndex; i < n; i++) {
+        if (arr[i] < targetMedian) {
+            cost += targetMedian - arr[i];
+        }
+    }
+
+    return cost <= k;
+}
+
+Meaning:
+
+Kya targetMedian ko k operations ke andar bana sakte hain?
+Why long Instead of int?
+
+Java me int range approx hoti hai:
+
+-2.1 billion to +2.1 billion
+
+But is problem me:
+
+k large ho sakta hai
+arr[i] large ho sakta hai
+cost bahut large ho sakta hai
+
+Example:
+
+targetMedian = 1,000,000,000
+arr[i] = 1
+difference = 999,999,999
+
+Agar aise 100000 elements hain:
+
+cost = 100000 * 1000000000
+     = 100000000000000
+
+Ye int range se bahut bada hai.
+
+So use:
+
+long k;
+long[] arr;
+long low, high, mid, ans;
+long cost;
+
+Notebook line:
+
+We use long because k, array values, and cost calculation can exceed int range.
+Final Code
+import java.util.*;
+
+public class Main {
+    public static void main(String args[]) {
+        Scanner sc = new Scanner(System.in);
+
+        int n = sc.nextInt();
+        long k = sc.nextLong();
+
+        long[] arr = new long[n];
+
+        for (int i = 0; i < n; i++) {
+            arr[i] = sc.nextLong();
+        }
+
+        Arrays.sort(arr);
+
+        long low = arr[n / 2];
+        long high = arr[n / 2] + k;
+        long ans = low;
+
+        while (low <= high) {
+            long mid = low + (high - low) / 2;
+
+            if (canMake(arr, n, k, mid)) {
+                ans = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        System.out.println(ans);
+        sc.close();
+    }
+
+    private static boolean canMake(long[] arr, int n, long k, long targetMedian) {
+        long cost = 0;
+        int medianIndex = n / 2;
+
+        for (int i = medianIndex; i < n; i++) {
+            if (arr[i] < targetMedian) {
+                cost += targetMedian - arr[i];
+            }
+        }
+
+        return cost <= k;
+    }
+}
+Dry Run
+
+Input:
+
+n = 5
+k = 5
+arr = [1, 2, 1, 1, 1]
+
+After sorting:
+
+[1, 1, 1, 1, 2]
+
+Initial values:
+
+low = arr[n / 2] = arr[2] = 1
+high = arr[n / 2] + k = 1 + 5 = 6
+ans = 1
+Iteration 1
+low = 1
+high = 6
+mid = 3
+
+Check target median 3.
+
+Median index se right side:
+
+1, 1, 2
+
+Cost:
+
+1 → 3 = 2
+1 → 3 = 2
+2 → 3 = 1
+
+Total:
+
+5
+
+Since:
+
+5 <= k
+
+Median 3 possible.
+
+So:
+
+ans = 3
+low = mid + 1 = 4
+Iteration 2
+low = 4
+high = 6
+mid = 5
+
+Check target median 5.
+
+Cost:
+
+1 → 5 = 4
+1 → 5 = 4
+2 → 5 = 3
+
+Total:
+
+11
+
+Since:
+
+11 > k
+
+Median 5 not possible.
+
+So:
+
+high = mid - 1 = 4
+Iteration 3
+low = 4
+high = 4
+mid = 4
+
+Check target median 4.
+
+Cost:
+
+1 → 4 = 3
+1 → 4 = 3
+2 → 4 = 2
+
+Total:
+
+8
+
+Since:
+
+8 > k
+
+Median 4 not possible.
+
+So:
+
+high = mid - 1 = 3
+
+Now:
+
+low = 4
+high = 3
+
+Loop stop.
+
+Final answer:
+
+3
+Time Complexity
+
+Sorting:
+
+O(n log n)
+
+Binary search range:
+
+low = currentMedian
+high = currentMedian + k
+
+Binary search iterations:
+
+O(log k)
+
+In each binary search iteration, canMake() runs from median index to end:
+
+O(n)
+
+So binary search part:
+
+O(n log k)
+
+Final time complexity:
+
+O(n log n + n log k)
+Space Complexity
+
+Array store kar rahe hain:
+
+long[] arr = new long[n];
+
+So:
+
+Space Complexity = O(n)
+
+Extra variables only count karein to:
+
+Extra Space = O(1)
+All Queries and Answers
+Query 1
+Median ko 3 banana hai ye to kahi nahi likha?
+
+Answer:
+
+Question me directly nahi likha hota. 3 ek possible target median hai.
+Hum binary search me possible median values check karte hain.
+Query 2
+Median se last tak sab equal hone chahiye kya?
+
+Answer:
+
+Exactly equal hone zaruri nahi.
+Sab at least targetMedian ke barabar hone chahiye.
+For targetMedian = 3, elements >= 3 hone chahiye.
+Query 3
+Cost 2 + 2 + 1 = 5 kaise?
+
+Answer:
+
+targetMedian = 3
+right side = [1, 1, 2]
+
+1 to 3 = 2
+1 to 3 = 2
+2 to 3 = 1
+
+total cost = 5
+Query 4
+high kya rakhenge?
+
+Answer:
+
+high = currentMedian + k
+
+Because total k operations hain, median current value se at most k tak increase ho sakta hai.
+
+Query 5
+low = mid?
+
+Answer:
+
+Initial low = current median hota hai.
+Binary search ke andar agar mid possible hai, tab low = mid + 1 karte hain.
+Query 6
+Why long instead of int?
+
+Answer:
+
+Because k, arr values, and cost calculation int range se bahar ja sakte hain.
+Cost bahut large ho sakta hai, isliye long safe hai.
+Final One-Line Logic
+Sort array, then binary search on possible median. For each target median, calculate cost to make all elements from median index to end at least targetMedian. If cost <= k, try bigger median; otherwise try smaller median.
