@@ -1,0 +1,288 @@
+CF 313B — Ilya and Queries
+Problem Story
+
+Ek string s di hai jisme . aur # characters ho sakte hain.
+
+m queries di hongi.
+
+Har query me l aur r diya hoga.
+
+Hume count karna hai ki range l se r-1 ke andar kitni positions i aisi hain jahan:
+
+s[i] == s[i+1]
+
+Important:
+
+Hum adjacent equal pairs count karte hain.
+
+Example:
+
+s = "abbcaa"
+
+Equal adjacent pairs:
+
+bb
+aa
+
+Agar query:
+
+1 6
+
+Answer:
+
+2
+Brute Force Idea
+
+Har query ke liye:
+
+l se r-1 tak loop chalao.
+Har index par check karo:
+s.charAt(i) == s.charAt(i + 1)
+
+Agar equal hai:
+
+count++
+
+Sab queries ke liye same process repeat.
+
+Brute Force TC
+O(m × n)
+
+Worst case har query me poori string traverse hogi.
+
+SC
+O(1)
+Optimized Idea (Prefix Sum)
+
+Observation:
+
+Har query me baar-baar adjacent pair check karna waste hai.
+
+Isliye pehle ek prefix array bana lenge.
+
+Prefix Meaning
+prefix[i] = index 0 se i tak kitne equal adjacent pairs mile
+
+Example:
+
+s = "abbcaa"
+
+index : 0 1 2 3 4 5
+char  : a b b c a a
+
+Adjacent check:
+
+a,b ❌
+b,b ✅
+b,c ❌
+c,a ❌
+a,a ✅
+
+Prefix array:
+
+prefix = [0,0,1,1,1,2]
+Prefix Build Logic
+for(int i = 1; i < n; i++) {
+
+    prefix[i] = prefix[i-1];
+
+    if(s.charAt(i-1) == s.charAt(i)){
+        prefix[i]++;
+    }
+
+}
+Why
+
+First line:
+
+prefix[i] = prefix[i-1];
+
+Matlab:
+
+Pichhle index tak jitne equal pairs mile the,
+wo current index par copy kar do.
+
+Second line:
+
+if(s.charAt(i-1) == s.charAt(i))
+
+Current adjacent pair check karte hain.
+
+Agar equal mila:
+
+prefix[i]++;
+
+Matlab ek naya equal adjacent pair mil gaya.
+
+Query Formula
+
+Agar query:
+
+l r
+
+Answer:
+
+prefix[r-1] - prefix[l-1]
+
+Reason:
+
+prefix[r-1]
+=
+start se r-1 tak total equal pairs
+
+prefix[l-1]
+=
+start se l-1 tak total equal pairs
+
+Subtract karenge to sirf l se r-1 wali range bach jayegi.
+Dry Run
+s = "abbcaa"
+
+prefix = [0,0,1,1,1,2]
+
+Query:
+
+2 5
+
+Formula:
+
+prefix[4] - prefix[1]
+
+= 1 - 0
+
+= 1
+
+Manual check:
+
+bb ✅
+bc ❌
+ca ❌
+
+Answer:
+
+1
+Final Code
+import java.util.*;
+
+public class Main {
+
+    public static void main(String args[]) {
+
+        Scanner sc = new Scanner(System.in);
+
+        String s = sc.next();
+
+        int n = s.length();
+
+        int[] prefix = new int[n];
+
+        for(int i = 1; i < n; i++){
+
+            prefix[i] = prefix[i-1];
+
+            if(s.charAt(i-1) == s.charAt(i)){
+                prefix[i]++;
+            }
+        }
+
+        int m = sc.nextInt();
+
+        for(int q = 0; q < m; q++){
+
+            int l = sc.nextInt();
+            int r = sc.nextInt();
+
+            int answer = prefix[r-1] - prefix[l-1];
+
+            System.out.println(answer);
+        }
+
+        sc.close();
+    }
+}
+Important Mistakes
+Mistake 1
+
+Wrong:
+
+String s = sc.next();
+
+int n = sc.nextInt();
+
+Correct:
+
+String s = sc.next();
+
+int n = s.length();
+Mistake 2
+
+Wrong:
+
+s.charAt[i]
+
+Correct:
+
+s.charAt(i)
+Mistake 3
+
+Wrong:
+
+=
+
+Correct comparison:
+
+==
+Mistake 4
+
+Wrong:
+
+prefix[i] == prefix[i-1]
+
+Correct:
+
+prefix[i] = prefix[i-1]
+Mistake 5
+
+Loop:
+
+for(int i = 1; i < n; i++)
+
+Not:
+
+i < n-1
+Time Complexity
+Prefix Build
+O(n)
+Queries
+
+Har query:
+
+O(1)
+
+Total:
+
+O(m)
+
+Overall:
+
+O(n + m)
+Space Complexity
+O(n)
+
+Prefix array use hui hai.
+
+Interview Explanation
+
+"I precompute a prefix array where prefix[i] stores the number of equal adjacent character pairs from index 0 to i.
+
+For every query, instead of traversing the range again, I simply subtract:
+
+prefix[r-1] - prefix[l-1]
+
+This gives the number of equal adjacent pairs inside the required range.
+
+The preprocessing takes O(n) and each query is answered in O(1), so the total complexity becomes O(n + m)."
+
+Final Revision Line
+Build prefix array of equal adjacent pairs once, then answer every query using:
+answer = prefix[r-1] - prefix[l-1]
