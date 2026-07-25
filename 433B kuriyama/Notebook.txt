@@ -1,0 +1,482 @@
+📌 CF433B - Kuriyama Mirai's Stones
+🔹 Problem Link
+
+Codeforces 433B
+
+🔹 Pattern
+
+Prefix Sum + Sorting + Range Query
+
+1) Problem Story (Simple Explanation)
+
+Ek ladki ke paas n stones hain.
+
+Har stone ki ek value hai.
+
+Example:
+
+a = [6,4,2,7,2]
+
+Usse m queries answer karni hain.
+
+Har query me:
+
+type l r
+
+diya hoga.
+
+Do types hain:
+
+Type 1:
+1 l r
+
+Original array me index l se r tak ka sum batao.
+
+Example:
+
+Original:
+[6,4,2,7,2]
+
+Query:
+1 2 4
+
+Answer:
+4+2+7 = 13
+Type 2:
+2 l r
+
+Pehle array ko sort karo.
+
+[6,4,2,7,2]
+
+Sorted:
+[2,2,4,6,7]
+
+Phir sorted array me l se r tak ka sum batao.
+
+Example:
+
+2 2 4
+
+2+4+6 = 12
+2) Brute Force Approach
+
+Har query ke liye:
+
+Agar type 1 hai:
+
+original array me l se r tak loop chalao
+sum calculate karo
+
+Agar type 2 hai:
+
+sorted array me l se r tak loop chalao
+sum calculate karo
+Brute Code Idea:
+for every query:
+
+    if type == 1:
+
+        sum = 0
+
+        for i = l to r:
+            sum += original[i]
+
+
+    else:
+
+        sum = 0
+
+        for i = l to r:
+            sum += sorted[i]
+
+
+    print sum
+3) Brute Force Complexity
+
+Queries:
+
+m
+
+Har query:
+
+O(n)
+
+Total:
+
+O(n*m)
+
+Agar n aur m bade hain to TLE ❌
+
+4) Optimization Idea
+
+Question me important words:
+
+Multiple queries
+Range sum
+
+Trigger:
+
+🔥 Prefix Sum
+
+Problem:
+
+Har baar range sum calculate nahi karna.
+
+Hum pehle hi sum store kar lenge.
+
+5) Main Observation
+
+Hume do alag arrays ke sum chahiye:
+
+Original array
+Sorted array
+
+Isliye:
+
+Do prefix arrays banayenge:
+
+prefixOriginal[]
+
+prefixSorted[]
+6) Prefix Sum Concept
+
+Example:
+
+Original:
+
+a = [6,4,2,7,2]
+
+Prefix:
+
+index:          1   2   3   4   5
+
+prefixOriginal:
+                6  10  12  19  21
+
+Meaning:
+
+prefix[i] =
+index 1 se i tak ka sum
+
+Sorted:
+
+[2,2,4,6,7]
+
+Prefix:
+
+2 4 8 14 21
+7) Range Sum Formula
+
+Agar:
+
+l to r
+
+ka sum chahiye:
+
+Formula:
+
+prefix[r] - prefix[l-1]
+
+Reason:
+
+Example:
+
+Need:
+
+index 3 to 5
+
+Prefix:
+
+prefix[5]
+
+=
+1+2+3+4+5
+
+Extra part:
+
+1+2
+
+Remove:
+
+prefix[2]
+
+Remaining:
+
+3+4+5
+8) Optimized Approach
+Step 1:
+
+Input array lo.
+
+Step 2:
+
+Original prefix banao.
+
+prefixOriginal[i]
+=
+prefixOriginal[i-1]+a[i]
+Step 3:
+
+Array ka copy banao.
+
+Sort karo.
+
+Step 4:
+
+Sorted prefix banao.
+
+Step 5:
+
+Queries answer karo.
+
+If:
+
+type == 1
+
+Use:
+
+prefixOriginal
+
+Else:
+
+prefixSorted
+9) Optimized Pseudocode
+Input n
+
+Create original array
+
+Create prefixOriginal
+
+
+for i = 1 to n:
+
+    input a[i]
+
+
+for i = 1 to n:
+
+    prefixOriginal[i] =
+    prefixOriginal[i-1]+a[i]
+
+
+
+Create sorted array copy
+
+Sort sorted array
+
+
+for i = 1 to n:
+
+    prefixSorted[i] =
+    prefixSorted[i-1]+sorted[i]
+
+
+
+Input m
+
+
+for every query:
+
+    input type,l,r
+
+
+    if type == 1:
+
+        answer =
+        prefixOriginal[r]-prefixOriginal[l-1]
+
+
+    else:
+
+        answer =
+        prefixSorted[r]-prefixSorted[l-1]
+
+
+    print answer
+10) Dry Run
+
+Input:
+
+5
+
+6 4 2 7 2
+
+3
+
+2 2 4
+
+1 2 4
+
+2 1 5
+Step 1:
+
+Original:
+
+6 4 2 7 2
+
+Prefix:
+
+6 10 12 19 21
+
+Sorted:
+
+2 2 4 6 7
+
+Prefix:
+
+2 4 8 14 21
+Query 1:
+2 2 4
+
+Type 2:
+
+Use sorted prefix
+
+Formula:
+
+prefixSorted[4]-prefixSorted[1]
+14-2
+
+=12
+
+Answer:
+
+12
+Query 2:
+1 2 4
+
+Type 1:
+
+Use original prefix
+
+Formula:
+
+prefixOriginal[4]-prefixOriginal[1]
+19-6
+
+=13
+
+Answer:
+
+13
+Query 3:
+2 1 5
+
+Type 2:
+
+prefixSorted[5]-prefixSorted[0]
+21-0
+
+=21
+
+Answer:
+
+21
+11) Java Code Structure
+
+Important points:
+
+int[] a = new int[n+1];
+
+int[] prefixOriginal = new int[n+1];
+
+int[] prefixSorted = new int[n+1];
+
+1-based indexing use karenge.
+
+12) Time Complexity
+Input:
+O(n)
+Prefix Original:
+O(n)
+Sorting:
+O(n log n)
+Prefix Sorted:
+O(n)
+Queries:
+
+Each query:
+
+O(1)
+
+Total:
+
+🔥
+
+TC = O(n log n + m)
+13) Space Complexity
+
+Arrays:
+
+original
+sorted
+prefixOriginal
+prefixSorted
+
+Each:
+
+O(n)
+
+Overall:
+
+🔥
+
+SC = O(n)
+14) Interview Explanation ⭐
+
+Question: Explain your approach.
+
+Answer:
+
+"Since the problem contains multiple range sum queries, calculating the sum every time would be inefficient. I used prefix sums to preprocess the array. I created one prefix array for the original order and another prefix array for the sorted order. For each query, based on the type, I select the appropriate prefix array and answer the range sum in O(1) using prefix[r] - prefix[l-1]. Sorting takes O(n log n), so the overall complexity is O(n log n + m)."
+
+15) Mistake Notebook
+Mistake 1:
+
+❌ Sorting original array directly
+
+Arrays.sort(a)
+
+Problem:
+Original order lost.
+
+Solution:
+
+sorted = a.clone()
+Arrays.sort(sorted)
+Mistake 2:
+
+❌ Using normal array instead of prefix array
+
+Wrong:
+
+a[r]-a[l-1]
+
+Correct:
+
+prefix[r]-prefix[l-1]
+Mistake 3:
+
+Confusing type:
+
+type 1 → original prefix
+
+type 2 → sorted prefix
+Final Pattern Memory 🔥
+Multiple Range Queries
+          |
+          ↓
+      Prefix Sum
+
+
+Two versions of array
+          |
+          ↓
+Two Prefix Arrays
+
+
+Query Type decides:
+          |
+          ↓
+Which prefix to use
