@@ -1,0 +1,387 @@
+Codeforces 343B — Alternating Current (Notebook)
+Problem Statement
+
+Ek string di gayi hai jisme sirf:
+
+A
+B
+
+characters hote hain.
+
+Rule:
+
+Agar do adjacent same characters milte hain:
+
+AA
+
+ya
+
+BB
+
+to dono remove ho jaate hain.
+
+Ye process tab tak repeat hota rahega jab tak aur koi adjacent equal pair na bache.
+
+Agar end me string completely empty ho jaye:
+
+YES
+
+Otherwise:
+
+NO
+Example
+Input
+ABBA
+
+Process
+
+ABBA
+
+BB remove
+
+AA
+
+AA remove
+
+(empty)
+
+Output
+
+YES
+Pattern
+Stack Cancellation Pattern
+
+Ye Monotonic Stack question nahi hai.
+
+Ye Stack Simulation question hai.
+
+Intuition
+
+Hume adjacent equal characters remove karne hain.
+
+Stack ka top hamesha last unmatched character represent karega.
+
+Har naye character ke liye sirf top se compare karna hai.
+
+Main Observation ⭐
+
+Current character aur stack top agar same hain
+
+Top == Current
+
+to
+
+Remove both
+
+Matlab
+
+stack.pop();
+
+Agar same nahi hain
+
+Top != Current
+
+to
+
+Current ko future matching ke liye store karo
+
+Matlab
+
+stack.push(curr);
+Algorithm
+Step 1
+
+Read String
+
+String s = sc.next();
+Step 2
+
+Create Stack
+
+Stack<Character> stack = new Stack<>();
+Step 3
+
+Traverse String
+
+for(int i=0;i<s.length();i++)
+
+Current Character
+
+char curr = s.charAt(i);
+Step 4
+
+Check
+
+If
+
+!stack.isEmpty()
+
+and
+
+curr==stack.peek()
+
+then
+
+stack.pop();
+
+Otherwise
+
+stack.push(curr);
+Step 5
+
+After processing complete string
+
+If
+
+stack.isEmpty()
+
+Return
+
+YES
+
+Else
+
+NO
+Dry Run 1
+
+Input
+
+ABBA
+
+Initially
+
+[]
+
+Read
+
+A
+
+Push
+
+[A]
+
+Read
+
+B
+
+Top != Current
+
+Push
+
+[A,B]
+
+Read
+
+B
+
+Top == Current
+
+Pop
+
+[A]
+
+Read
+
+A
+
+Top == Current
+
+Pop
+
+[]
+
+Stack Empty
+
+Answer
+
+YES
+Dry Run 2
+
+Input
+
+ABB
+
+Initially
+
+[]
+
+Read
+
+A
+
+Push
+
+[A]
+
+Read
+
+B
+
+Push
+
+[A,B]
+
+Read
+
+B
+
+Pop
+
+[A]
+
+End
+
+Stack not Empty
+
+Answer
+
+NO
+Why Stack?
+
+Stack hamesha
+
+Last unmatched character
+
+store karta hai.
+
+Current character sirf top se interact karega.
+
+Isi wajah se
+
+Push
+
+Pop
+
+hi enough hai.
+
+Why no Nested Loop?
+
+Har character
+
+ek baar push
+maximum ek baar pop
+
+Isliye
+
+Overall O(n)
+Code
+import java.util.*;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        String s = sc.next();
+
+        Stack<Character> stack = new Stack<>();
+
+        for(int i = 0; i < s.length(); i++){
+
+            char curr = s.charAt(i);
+
+            if(!stack.isEmpty() && curr == stack.peek()){
+
+                stack.pop();
+
+            }else{
+
+                stack.push(curr);
+
+            }
+
+        }
+
+        if(stack.isEmpty()){
+
+            System.out.println("YES");
+
+        }else{
+
+            System.out.println("NO");
+
+        }
+
+        sc.close();
+
+    }
+
+}
+Time Complexity
+
+Let
+
+n = length of string
+
+Every character
+
+pushed once
+popped at most once
+
+Therefore
+
+TC = O(n)
+Space Complexity
+
+Worst Case
+
+Example
+
+ABABABAB
+
+No cancellation.
+
+Stack stores every character.
+
+SC = O(n)
+Common Mistakes
+1. Printing YES/NO inside loop
+
+❌ Wrong
+
+Decision should be taken after processing the complete string.
+
+2. Using toCharArray() for current character
+
+❌ Wrong
+
+Use
+
+char curr = s.charAt(i);
+3. Forgetting stack.isEmpty()
+
+Before using
+
+stack.peek()
+
+always check
+
+!stack.isEmpty()
+
+Otherwise
+
+EmptyStackException
+Interview Explanation
+
+I use a stack to simulate adjacent character cancellation. While traversing the string, if the current character matches the stack top, I remove the top because both characters cancel each other. Otherwise, I push the current character into the stack. After processing the entire string, if the stack is empty, all characters were cancelled successfully, so the answer is YES; otherwise, it is NO.
+
+Pattern Sheet ⭐
+
+Pattern Name: Stack Cancellation
+
+Recognition Clues:
+
+Adjacent elements disappear/remove.
+Cancellation may create new adjacent pairs.
+Only the latest unmatched element matters.
+
+Core Rule:
+
+Top == Current
+        ↓
+      POP
+
+Top != Current
+        ↓
+      PUSH
