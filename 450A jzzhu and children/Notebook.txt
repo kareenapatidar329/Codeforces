@@ -1,0 +1,724 @@
+# 📒 Codeforces 450A — Jzzhu and Children
+
+## 1. Problem
+
+Jzzhu has `n` children standing in a queue.
+
+Every child needs a certain number of candies.
+
+Jzzhu gives **exactly `m` candies** to the child at the front.
+
+* If the child now has enough candies → child leaves the queue.
+* Otherwise, the child goes to the **rear** of the queue with the remaining requirement.
+
+We have to find the **number of the last child who leaves the queue**.
+
+---
+
+# 2. Example
+
+```text
+n = 5
+m = 2
+
+requirements:
+1 3 1 4 2
+```
+
+Initial queue:
+
+```text
+(1,1) → (2,3) → (3,1) → (4,4) → (5,2)
+```
+
+Each pair means:
+
+```text
+(student number, remaining candies)
+```
+
+---
+
+# 3. Core Idea
+
+This is a **Queue Simulation** problem.
+
+Queue follows:
+
+```text
+FIFO
+First In → First Out
+```
+
+Every time:
+
+```text
+Front student
+      ↓
+Give m candies
+      ↓
+Is requirement <= m?
+     ↙        ↘
+   YES         NO
+    ↓           ↓
+  Leave       remaining -= m
+    ↓           ↓
+update       rear of queue
+lastStudent
+```
+
+---
+
+# 4. What Do We Store?
+
+We need two pieces of information:
+
+```text
+Student Number
+Remaining Candies
+```
+
+So conceptually:
+
+```text
+(1,1)
+(2,3)
+(3,1)
+(4,4)
+(5,2)
+```
+
+That's why we create a `Student` class.
+
+---
+
+# 5. Student Class
+
+```java
+class Student {
+
+    int studentNumber;
+    int remainingCandies;
+
+    Student(int studentNumber, int remainingCandies) {
+
+        this.studentNumber = studentNumber;
+        this.remainingCandies = remainingCandies;
+    }
+}
+```
+
+### Meaning
+
+```java
+new Student(2, 3)
+```
+
+means:
+
+```text
+Student Number = 2
+Remaining Candies = 3
+```
+
+---
+
+# 6. Why `this`?
+
+```java
+this.studentNumber = studentNumber;
+```
+
+Left side:
+
+```text
+this.studentNumber
+```
+
+→ object's variable.
+
+Right side:
+
+```text
+studentNumber
+```
+
+→ constructor parameter.
+
+So:
+
+```java
+new Student(2,3)
+```
+
+stores:
+
+```text
+studentNumber = 2
+remainingCandies = 3
+```
+
+---
+
+# 7. Initial Queue
+
+Input:
+
+```text
+5 2
+1 3 1 4 2
+```
+
+Queue becomes:
+
+```text
+Front
+ ↓
+
+(1,1)
+(2,3)
+(3,1)
+(4,4)
+(5,2)
+
+                    ↑
+                   Rear
+```
+
+---
+
+# 8. Dry Run
+
+## Step 1 — Student 1
+
+```text
+Student = 1
+Candies = 1
+m = 2
+```
+
+Check:
+
+```text
+1 <= 2
+```
+
+Satisfied.
+
+Student 1 leaves.
+
+```text
+lastStudent = 1
+```
+
+Queue:
+
+```text
+(2,3) → (3,1) → (4,4) → (5,2)
+```
+
+---
+
+## Step 2 — Student 2
+
+```text
+Student = 2
+Candies = 3
+```
+
+Check:
+
+```text
+3 <= 2 → false
+```
+
+Give 2 candies.
+
+Remaining:
+
+```text
+3 - 2 = 1
+```
+
+Student goes to rear:
+
+```text
+(3,1) → (4,4) → (5,2) → (2,1)
+```
+
+---
+
+## Step 3 — Student 3
+
+```text
+1 <= 2
+```
+
+Satisfied.
+
+```text
+lastStudent = 3
+```
+
+Queue:
+
+```text
+(4,4) → (5,2) → (2,1)
+```
+
+---
+
+## Step 4 — Student 4
+
+```text
+4 > 2
+```
+
+Remaining:
+
+```text
+4 - 2 = 2
+```
+
+Student 4 goes to rear.
+
+```text
+(5,2) → (2,1) → (4,2)
+```
+
+---
+
+## Step 5 — Student 5
+
+```text
+2 <= 2
+```
+
+Satisfied.
+
+```text
+lastStudent = 5
+```
+
+Queue:
+
+```text
+(2,1) → (4,2)
+```
+
+---
+
+## Step 6 — Student 2
+
+```text
+1 <= 2
+```
+
+Satisfied.
+
+```text
+lastStudent = 2
+```
+
+Queue:
+
+```text
+(4,2)
+```
+
+---
+
+## Step 7 — Student 4
+
+```text
+2 <= 2
+```
+
+Satisfied.
+
+```text
+lastStudent = 4
+```
+
+Queue:
+
+```text
+empty
+```
+
+Final:
+
+```text
+lastStudent = 4
+```
+
+### Answer:
+
+```text
+4
+```
+
+---
+
+# 9. Pseudocode
+
+```text
+read n
+read m
+
+create queue of Student
+
+for i = 1 to n:
+    read requiredCandies
+    add (i, requiredCandies) to queue
+
+lastStudent = -1
+
+while queue is not empty:
+
+    current = remove front
+
+    student = current.studentNumber
+    candies = current.remainingCandies
+
+    if candies <= m:
+
+        student leaves
+        lastStudent = student
+
+    else:
+
+        candies = candies - m
+
+        add (student, candies) to rear
+
+print lastStudent
+```
+
+---
+
+# 10. Java Code
+
+```java
+import java.util.*;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+
+        Queue<Student> q = new LinkedList<>();
+
+        // Create initial queue
+        for (int i = 1; i <= n; i++) {
+
+            int requiredCandies = sc.nextInt();
+
+            q.offer(new Student(i, requiredCandies));
+        }
+
+        int lastStudent = -1;
+
+        // Simulate the queue
+        while (!q.isEmpty()) {
+
+            Student curr = q.poll();
+
+            int student = curr.studentNumber;
+            int candies = curr.remainingCandies;
+
+            if (candies <= m) {
+
+                // Student is satisfied
+                lastStudent = student;
+
+            } else {
+
+                // Student still needs candies
+                candies = candies - m;
+
+                // Send student to rear
+                q.offer(new Student(student, candies));
+            }
+        }
+
+        System.out.println(lastStudent);
+
+        sc.close();
+    }
+}
+
+class Student {
+
+    int studentNumber;
+    int remainingCandies;
+
+    Student(int studentNumber, int remainingCandies) {
+
+        this.studentNumber = studentNumber;
+        this.remainingCandies = remainingCandies;
+    }
+}
+```
+
+---
+
+# 11. Important Queue Operations
+
+### Add to rear
+
+```java
+q.offer(student);
+```
+
+### Remove from front
+
+```java
+q.poll();
+```
+
+So this problem ka basic simulation is:
+
+```text
+poll → process → offer if needed
+```
+
+---
+
+# 12. Why `lastStudent = -1`?
+
+Initially koi student complete nahi hua.
+
+So:
+
+```java
+int lastStudent = -1;
+```
+
+Whenever a student leaves:
+
+```java
+lastStudent = student;
+```
+
+Suppose students leave in this order:
+
+```text
+1 → 3 → 5 → 2 → 4
+```
+
+Then:
+
+```text
+lastStudent:
+1
+3
+5
+2
+4
+```
+
+Finally:
+
+```text
+lastStudent = 4
+```
+
+So `4` is the answer.
+
+---
+
+# 13. Time Complexity
+
+A student can return to the queue multiple times.
+
+If student `i` needs `a[i]` candies, approximately:
+
+```text
+a[i] / m
+```
+
+turns are required.
+
+Therefore:
+
+```text
+TC = O(Σ(a[i] / m))
+```
+
+A simpler upper bound:
+
+```text
+O(Σ a[i] / m)
+```
+
+---
+
+# 14. Space Complexity
+
+At most all `n` students can be present in the queue.
+
+Therefore:
+
+```text
+SC = O(n)
+```
+
+---
+
+# 15. Common Mistakes
+
+### ❌ Mistake 1
+
+```java
+for (int i = 1; i < n; i++)
+```
+
+This skips student `n`.
+
+Correct:
+
+```java
+for (int i = 1; i <= n; i++)
+```
+
+---
+
+### ❌ Mistake 2
+
+Checking:
+
+```java
+if (required < m)
+```
+
+Correct:
+
+```java
+if (candies <= m)
+```
+
+Because if requirement is exactly `m`, the student is also satisfied.
+
+---
+
+### ❌ Mistake 3
+
+Putting satisfied student back into queue.
+
+Wrong:
+
+```text
+satisfied → rear
+```
+
+Correct:
+
+```text
+satisfied → leaves queue
+```
+
+---
+
+### ❌ Mistake 4
+
+Unsatisfied student ko remove karke permanently delete kar dena.
+
+Wrong.
+
+If:
+
+```text
+candies > m
+```
+
+then:
+
+```text
+candies -= m
+```
+
+and student goes to:
+
+```text
+rear
+```
+
+---
+
+### ❌ Mistake 5
+
+Printing every student.
+
+We only need:
+
+```java
+System.out.println(lastStudent);
+```
+
+after the queue becomes empty.
+
+---
+
+# 16. Pattern
+
+## Queue Simulation
+
+Whenever a problem says:
+
+```text
+people/items are standing in a line
+↓
+front item gets processed
+↓
+if completed → removed
+↓
+if not completed → goes to rear
+```
+
+Think:
+
+```text
+QUEUE SIMULATION
+```
+
+Core template:
+
+```text
+while (!queue.isEmpty()) {
+
+    current = queue.poll();
+
+    process(current);
+
+    if (not completed) {
+        queue.offer(current);
+    }
+}
+```
+
+---
+
+# 17. One-Line Memory Trick 🧠
+
+> **Poll the front → give `m` → satisfied = remove → not satisfied = decrease + offer to rear.**
+
+### Final pattern:
+
+```text
+QUEUE
+ ↓
+poll()
+ ↓
+process
+ ↙       ↘
+done    not done
+ ↓         ↓
+remove    offer()
+```
+
+**CF 450A → Queue Simulation ✅**
