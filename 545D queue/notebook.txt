@@ -1,0 +1,628 @@
+# 📒 Codeforces 545D — Queue
+
+## 1. Problem Statement
+
+There are `n` people standing in a queue.
+
+For every person, `a[i]` tells us the **time required to serve that person**.
+
+A person becomes **disappointed** if they have to wait for **more time than `a[i]`**.
+
+We can rearrange the people in the queue.
+
+### Goal:
+
+Find the **maximum number of people who will NOT be disappointed**.
+
+---
+
+# 2. Main Observation 💡
+
+We should serve the people who have **smaller service time first**.
+
+Why?
+
+Suppose:
+
+```text
+A = 2
+B = 5
+```
+
+If B goes first:
+
+```text
+B → wait 0
+A → wait 5 > 2 ❌
+```
+
+Only B is satisfied.
+
+If A goes first:
+
+```text
+A → wait 0
+B → wait 2 <= 5
+```
+
+Both are satisfied.
+
+Therefore:
+
+> **Smaller `a[i]` first → larger `a[i]` later.**
+
+So we sort the array in **ascending order**.
+
+---
+
+# 3. Important Difference From Our Earlier Understanding
+
+Initially we thought:
+
+```text
+waitingTime = i
+```
+
+❌ This is WRONG.
+
+Actual waiting time depends on the **total service time of all previously served people**.
+
+So:
+
+```text
+waitingTime = sum of previous satisfied people's service times
+```
+
+---
+
+# 4. Example
+
+Input:
+
+```text
+5
+15 2 1 5 3
+```
+
+Sort:
+
+```text
+[1, 2, 3, 5, 15]
+```
+
+Initially:
+
+```text
+waitingTime = 0
+satisfied = 0
+```
+
+---
+
+## Person 1
+
+```text
+a[i] = 1
+waitingTime = 0
+```
+
+Check:
+
+```text
+0 <= 1 ✅
+```
+
+Satisfied.
+
+```text
+satisfied = 1
+waitingTime = 0 + 1 = 1
+```
+
+---
+
+## Person 2
+
+```text
+a[i] = 2
+waitingTime = 1
+```
+
+Check:
+
+```text
+1 <= 2 ✅
+```
+
+Satisfied.
+
+```text
+satisfied = 2
+waitingTime = 1 + 2 = 3
+```
+
+---
+
+## Person 3
+
+```text
+a[i] = 3
+waitingTime = 3
+```
+
+Check:
+
+```text
+3 <= 3 ✅
+```
+
+Satisfied.
+
+```text
+satisfied = 3
+waitingTime = 3 + 3 = 6
+```
+
+---
+
+## Person 4
+
+```text
+a[i] = 5
+waitingTime = 6
+```
+
+Check:
+
+```text
+6 <= 5 ❌
+```
+
+Disappointed.
+
+So:
+
+```text
+satisfied = 3
+waitingTime = 6
+```
+
+### Important:
+
+We **DO NOT** do:
+
+```text
+waitingTime += 5
+```
+
+because this person was not served.
+
+---
+
+## Person 5
+
+```text
+a[i] = 15
+waitingTime = 6
+```
+
+Check:
+
+```text
+6 <= 15 ✅
+```
+
+Satisfied.
+
+```text
+satisfied = 4
+waitingTime = 6 + 15 = 21
+```
+
+Final:
+
+```text
+satisfied = 4
+```
+
+### Answer:
+
+```text
+4
+```
+
+---
+
+# 5. Core Algorithm
+
+```text
+1. Input n
+2. Input array a
+3. Sort a in ascending order
+4. waitingTime = 0
+5. satisfied = 0
+
+6. For every person:
+       if waitingTime <= a[i]:
+           satisfied++
+           waitingTime += a[i]
+
+7. Print satisfied
+```
+
+---
+
+# 6. Pseudocode
+
+```text
+read n
+
+create array a of size n
+
+for i = 0 to n-1:
+    read a[i]
+
+sort a in ascending order
+
+waitingTime = 0
+satisfied = 0
+
+for i = 0 to n-1:
+
+    if waitingTime <= a[i]:
+
+        satisfied++
+
+        waitingTime = waitingTime + a[i]
+
+print satisfied
+```
+
+---
+
+# 7. Java Code
+
+```java
+import java.util.*;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        int n = sc.nextInt();
+
+        long[] a = new long[n];
+
+        // Input
+        for (int i = 0; i < n; i++) {
+            a[i] = sc.nextLong();
+        }
+
+        // Sort by service time
+        Arrays.sort(a);
+
+        long waitingTime = 0;
+        int satisfied = 0;
+
+        // Check every person
+        for (int i = 0; i < n; i++) {
+
+            if (waitingTime <= a[i]) {
+
+                satisfied++;
+
+                // This person's service time
+                // becomes waiting time for next people
+                waitingTime += a[i];
+            }
+        }
+
+        System.out.println(satisfied);
+
+        sc.close();
+    }
+}
+```
+
+---
+
+# 8. Line-by-Line Important Logic
+
+### Sort
+
+```java
+Arrays.sort(a);
+```
+
+Makes:
+
+```text
+small service time → large service time
+```
+
+---
+
+### Waiting time
+
+```java
+long waitingTime = 0;
+```
+
+Initially nobody has been served, so the first person waits `0`.
+
+---
+
+### Check
+
+```java
+if (waitingTime <= a[i])
+```
+
+Meaning:
+
+> Can this person tolerate the amount of time they have already waited?
+
+If yes → satisfied.
+
+---
+
+### Count
+
+```java
+satisfied++;
+```
+
+One more person successfully gets served without being disappointed.
+
+---
+
+### Update waiting time
+
+```java
+waitingTime += a[i];
+```
+
+This is done **ONLY when the person is satisfied**.
+
+Why?
+
+Because this person is actually served, and their service time will make the next person's waiting time longer.
+
+---
+
+# 9. Why Don't We Add Disappointed Person's Time?
+
+Suppose:
+
+```text
+waitingTime = 6
+a[i] = 5
+```
+
+Since:
+
+```text
+6 > 5
+```
+
+the person leaves/disappointed.
+
+They are **not served**.
+
+Therefore:
+
+```text
+waitingTime
+```
+
+stays `6`.
+
+We do NOT do:
+
+```text
+waitingTime += 5
+```
+
+---
+
+# 10. Why `long`?
+
+Constraints can make the total waiting/service time very large.
+
+For example:
+
+```text
+n = 100000
+a[i] = 10^9
+```
+
+The cumulative sum can become much larger than the `int` range.
+
+So safer:
+
+```java
+long[] a;
+long waitingTime;
+```
+
+---
+
+# 11. Time Complexity
+
+Sorting:
+
+```text
+O(n log n)
+```
+
+Loop:
+
+```text
+O(n)
+```
+
+Therefore:
+
+```text
+TC = O(n log n)
+```
+
+---
+
+# 12. Space Complexity
+
+Array:
+
+```java
+long[] a = new long[n];
+```
+
+takes:
+
+```text
+O(n)
+```
+
+Therefore:
+
+```text
+SC = O(n)
+```
+
+---
+
+# 13. Pattern
+
+### 🔥 Sorting + Greedy
+
+Whenever you see:
+
+```text
+People/items have different limits
++
+You can choose their order
++
+Goal is maximum satisfied/valid people
+```
+
+Think:
+
+```text
+SORT → GREEDILY PROCESS
+```
+
+Here:
+
+```text
+small service time first
+```
+
+is the greedy choice.
+
+---
+
+# 14. Common Mistakes
+
+### ❌ Mistake 1
+
+```java
+waitingTime = i;
+```
+
+Wrong.
+
+Correct:
+
+```java
+waitingTime = sum of previous satisfied service times
+```
+
+---
+
+### ❌ Mistake 2
+
+Adding every person's time:
+
+```java
+waitingTime += a[i];
+```
+
+outside the `if`.
+
+Wrong.
+
+Correct:
+
+```java
+if (waitingTime <= a[i]) {
+    satisfied++;
+    waitingTime += a[i];
+}
+```
+
+---
+
+### ❌ Mistake 3
+
+Using descending sort.
+
+Wrong:
+
+```text
+large → small
+```
+
+Correct:
+
+```text
+small → large
+```
+
+---
+
+# 15. One-Line Memory Trick 🧠
+
+> **Sort service times → keep cumulative waiting time → if current person can tolerate it, count them and add their service time.**
+
+### Formula to remember:
+
+```text
+waitingTime = sum of service times of previously satisfied people
+```
+
+and:
+
+```text
+if waitingTime <= a[i]
+    satisfied++
+    waitingTime += a[i]
+```
+
+---
+
+## Final Notebook Summary
+
+```text
+Problem: CF 545D — Queue
+
+Pattern:
+Sorting + Greedy
+
+Greedy:
+Smaller service time first
+
+Condition:
+waitingTime <= a[i]
+
+If satisfied:
+satisfied++
+waitingTime += a[i]
+
+TC:
+O(n log n)
+
+SC:
+O(n)
+```
